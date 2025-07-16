@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import db from './firebase.js'
+import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore/lite'
 
 type TodoItem = {
   content: string
@@ -8,16 +10,24 @@ type TodoItem = {
 
 const word = ref<string>('')
 
+const status = ref<string>('最新の状態です')
+
+const isGreen = ref<boolean>(true)
+
 const todoList = ref<TodoItem[]>([])
 
 const pushItem = () => {
   if (word.value == '') return
   todoList.value.push({ content: word.value, isFinished: false })
   word.value = ''
+  status.value = '未保存の状態です'
+  isGreen.value = false
 }
 
 const deleteItem = (i: number) => {
   todoList.value.splice(i, 1)
+  status.value = '未保存の状態です'
+  isGreen.value = false
 }
 
 const allDelete = () => {
@@ -25,21 +35,69 @@ const allDelete = () => {
     return !item.isFinished
   })
   todoList.value = newTodoList
+  status.value = '未保存の状態です'
+  isGreen.value = false
 }
+
+async function fetchItems() {
+  const querySnapshot = await getDocs(collection(db, 'items'))
+  todoList.value = querySnapshot.docs.map((doc) => ({
+    content: doc.data().content,
+    isFinished: doc.data().isFinished,
+  }))
+}
+
+async function updateDatabase() {
+  status.value = '保存中...'
+  const snapshot = await getDocs(collection(db, 'items'))
+  for (const document of snapshot.docs) {
+    await deleteDoc(doc(db, 'items', document.id))
+  }
+
+  for (const item of todoList.value) {
+    await addDoc(collection(db, 'items'), {
+      content: item.content,
+      isFinished: item.isFinished,
+    })
+  }
+
+  alert('保存完了')
+  status.value = '最新の状態です'
+  isGreen.value = true
+}
+
+onMounted(fetchItems)
 </script>
 
 <template>
   <div>
     <h1>TODO-APP</h1>
     <div class="container">
-      <form @submit.prevent="pushItem">
-        <input v-model="word" required placeholder="TodoListに入れたいものを入力" class="textbox" />
-        <button class="button">追加</button>
+      <form @submit.prevent="pushItem" :disabled="status == '保存中...'">
+        <input
+          v-model="word"
+          required
+          placeholder="TodoListに入れたいものを入力"
+          class="textbox"
+          :disabled="status == '保存中...'"
+        />
+        <button class="button" :disabled="status == '保存中...'">追加</button>
       </form>
+      <span :class="{ status, cogreen: isGreen, cored: !isGreen }">{{ status }}</span>
     </div>
-    <button v-if="todoList.length > 0" class="all-delete-button" @click="allDelete">
-      完了項目を全て削除
-    </button>
+    <div>
+      <button class="save-button" @click="updateDatabase" :disabled="status == '保存中...'">
+        リストを保存
+      </button>
+      <button
+        v-if="todoList.length > 0"
+        class="all-delete-button"
+        @click="allDelete"
+        :disabled="status == '保存中...'"
+      >
+        完了項目を全て削除
+      </button>
+    </div>
   </div>
 
   <div>
@@ -49,6 +107,8 @@ const allDelete = () => {
         id="checkbox"
         v-model="todo.isFinished"
         style="transform: scale(1.5); margin-right: 10px"
+        @click="((isGreen = false), (status = '未保存の状態です'))"
+        :disabled="status == '保存中...'"
       />
       <label
         for="checkbox"
@@ -56,7 +116,9 @@ const allDelete = () => {
         style="vertical-align: middle"
         >{{ todo.content }}</label
       >
-      <button class="delete-botton" @click="deleteItem(index)">削除</button>
+      <button class="delete-botton" @click="deleteItem(index)" :disabled="status == '保存中...'">
+        削除
+      </button>
     </div>
   </div>
 </template>
@@ -82,6 +144,12 @@ const allDelete = () => {
   height: 36px;
   margin-top: 10px;
 }
+.save-button {
+  font-size: 15px;
+  width: 120px;
+  height: 36px;
+  margin-top: 10px;
+}
 .deleteLine {
   text-decoration: line-through;
 }
@@ -92,5 +160,16 @@ const allDelete = () => {
   height: 30px;
   font-size: 15px;
   margin-left: 10px;
+}
+.status {
+  font-size: 20px;
+  margin-left: 10px;
+}
+
+.cogreen {
+  color: green;
+}
+.cored {
+  color: red;
 }
 </style>
