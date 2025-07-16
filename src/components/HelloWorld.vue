@@ -14,11 +14,17 @@ const pushItem = () => {
   if (word.value == '') return
   todoList.value.push({ content: word.value, isFinished: false })
   word.value = ''
-  console.log(todoList.value)
 }
 
 const deleteItem = (i: number) => {
   todoList.value.splice(i, 1)
+}
+
+const allDelete = () => {
+  const newTodoList: TodoItem[] = todoList.value.filter(function (item) {
+    return !item.isFinished
+  })
+  todoList.value = newTodoList
 }
 </script>
 
@@ -31,6 +37,9 @@ const deleteItem = (i: number) => {
         <button class="button">追加</button>
       </form>
     </div>
+    <button v-if="todoList.length > 0" class="all-delete-button" @click="allDelete">
+      完了項目を全て削除
+    </button>
   </div>
 
   <div>
@@ -66,6 +75,12 @@ const deleteItem = (i: number) => {
   font-size: 15px;
   width: 60px;
   height: 36px;
+}
+.all-delete-button {
+  font-size: 15px;
+  width: 170px;
+  height: 36px;
+  margin-top: 10px;
 }
 .deleteLine {
   text-decoration: line-through;
