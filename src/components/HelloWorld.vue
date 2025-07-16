@@ -1,41 +1,29 @@
 <script setup lang="ts">
-defineProps<{
-  msg: string
-}>()
+import { ref } from 'vue'
+
+type TodoItem = {
+  content: string
+  isFinished: boolean
+}
+
+const word = ref<string>('')
+
+const todoList = ref<TodoItem[]>([])
+
+const pushList = () => {
+  if (word.value == '') return
+  todoList.value.push({ content: word.value, isFinished: false })
+  word.value = ''
+  console.log(todoList.value)
+}
 </script>
 
 <template>
-  <div class="greetings">
-    <h1 class="green">{{ msg }}</h1>
-    <h3>
-      You’ve successfully created a project with
-      <a href="https://vite.dev/" target="_blank" rel="noopener">Vite</a> +
-      <a href="https://vuejs.org/" target="_blank" rel="noopener">Vue 3</a>. What's next?
-    </h3>
-  </div>
+  <h1>TODO-APP</h1>
+  <form @submit.prevent="pushList">
+    <input v-model="word" required placeholder="TodoListに入れたいものを入力" />
+    <button>追加</button>
+  </form>
 </template>
 
-<style scoped>
-h1 {
-  font-weight: 500;
-  font-size: 2.6rem;
-  position: relative;
-  top: -10px;
-}
-
-h3 {
-  font-size: 1.2rem;
-}
-
-.greetings h1,
-.greetings h3 {
-  text-align: center;
-}
-
-@media (min-width: 1024px) {
-  .greetings h1,
-  .greetings h3 {
-    text-align: left;
-  }
-}
-</style>
+<style scoped></style>
