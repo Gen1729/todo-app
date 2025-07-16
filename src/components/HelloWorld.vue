@@ -10,11 +10,15 @@ const word = ref<string>('')
 
 const todoList = ref<TodoItem[]>([])
 
-const pushList = () => {
+const pushItem = () => {
   if (word.value == '') return
   todoList.value.push({ content: word.value, isFinished: false })
   word.value = ''
   console.log(todoList.value)
+}
+
+const deleteItem = (i: number) => {
+  todoList.value.splice(i, 1)
 }
 </script>
 
@@ -22,7 +26,7 @@ const pushList = () => {
   <div>
     <h1>TODO-APP</h1>
     <div class="container">
-      <form @submit.prevent="pushList">
+      <form @submit.prevent="pushItem">
         <input v-model="word" required placeholder="TodoListに入れたいものを入力" class="textbox" />
         <button class="button">追加</button>
       </form>
@@ -43,6 +47,7 @@ const pushList = () => {
         style="vertical-align: middle"
         >{{ todo.content }}</label
       >
+      <button class="delete-botton" @click="deleteItem(index)">削除</button>
     </div>
   </div>
 </template>
@@ -67,5 +72,10 @@ const pushList = () => {
 }
 .item {
   font-size: 30px;
+}
+.delete-botton {
+  height: 30px;
+  font-size: 15px;
+  margin-left: 10px;
 }
 </style>
