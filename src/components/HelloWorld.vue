@@ -3,15 +3,7 @@ import { onMounted, ref } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 // @ts-ignore
 import db from './firebase.js'
-import {
-  collection,
-  getDocs,
-  addDoc,
-  deleteDoc,
-  updateDoc,
-  doc,
-  setDoc,
-} from 'firebase/firestore/lite'
+import { collection, getDocs, deleteDoc, updateDoc, doc, setDoc } from 'firebase/firestore/lite'
 
 type TodoItem = {
   fieldId: string
