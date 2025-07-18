@@ -73,7 +73,6 @@ onMounted(fetchItems)
         <input v-model="word" required placeholder="TodoListに入れたいものを入力" class="textbox" />
         <button class="button">追加</button>
       </form>
-      <span>{{ status }}</span>
     </div>
     <div>
       <button v-if="todoList.length > 0" class="all-delete-button" @click="allDeleteItems">
