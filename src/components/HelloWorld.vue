@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+// @ts-ignore
 import db from './firebase.js'
 import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore/lite'
 
