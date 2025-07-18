@@ -2,9 +2,10 @@
 import { onMounted, ref } from 'vue'
 // @ts-ignore
 import db from './firebase.js'
-import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore/lite'
+import { collection, getDocs, addDoc, deleteDoc,updateDoc, doc } from 'firebase/firestore/lite'
 
 type TodoItem = {
+  fieldId: string
   content: string
   isFinished: boolean
 }
@@ -19,7 +20,7 @@ const todoList = ref<TodoItem[]>([])
 
 const pushItem = () => {
   if (word.value == '') return
-  todoList.value.push({ content: word.value, isFinished: false })
+  todoList.value.push({ fieldId: content: word.value, isFinished: false })
   word.value = ''
   status.value = '未保存の状態です'
   isGreen.value = false
@@ -65,6 +66,12 @@ async function updateDatabase() {
   alert('保存完了')
   status.value = '最新の状態です'
   isGreen.value = true
+}
+
+async function updatebool(itemId: string) {
+  await updateDoc(doc(db, 'items', itemId), {
+    content: content,
+  })
 }
 
 onMounted(fetchItems)
