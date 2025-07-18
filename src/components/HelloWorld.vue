@@ -21,10 +21,6 @@ type TodoItem = {
 
 const word = ref<string>('')
 
-const status = ref<string>('最新の状態です')
-
-const isGreen = ref<boolean>(true)
-
 const todoList = ref<TodoItem[]>([])
 
 const pushItem = () => {
@@ -33,30 +29,30 @@ const pushItem = () => {
   pushItemToDatabase(word.value, uniqueId)
   todoList.value.push({ fieldId: uniqueId, content: word.value, isFinished: false })
   word.value = ''
-  status.value = '未保存の状態です'
-  isGreen.value = false
 }
 
-const pushItemToDatabase = (w: string, ID: string) => {
-  setDoc(doc(db, 'items', ID), {
+async function pushItemToDatabase(w: string, ID: string) {
+  await setDoc(doc(db, 'items', ID), {
     content: w,
     isFinished: false,
   })
 }
 
 const deleteItem = (i: number) => {
+  deleteDoc(doc(db, 'items', todoList.value[i].fieldId))
   todoList.value.splice(i, 1)
-  status.value = '未保存の状態です'
-  isGreen.value = false
 }
 
-const allDelete = () => {
-  const newTodoList: TodoItem[] = todoList.value.filter(function (item) {
-    return !item.isFinished
+const allDeleteItems = () => {
+  let newTodoList: TodoItem[] = []
+  todoList.value.map(function (item) {
+    if (item.isFinished) {
+      deleteDoc(doc(db, 'items', item.fieldId))
+    } else {
+      newTodoList.push(item)
+    }
   })
   todoList.value = newTodoList
-  status.value = '未保存の状態です'
-  isGreen.value = false
 }
 
 async function fetchItems() {
@@ -66,25 +62,6 @@ async function fetchItems() {
     content: doc.data().content,
     isFinished: doc.data().isFinished,
   }))
-}
-
-async function updateDatabase() {
-  status.value = '保存中...'
-  const snapshot = await getDocs(collection(db, 'items'))
-  for (const document of snapshot.docs) {
-    await deleteDoc(doc(db, 'items', document.id))
-  }
-
-  for (const item of todoList.value) {
-    await addDoc(collection(db, 'items'), {
-      content: item.content,
-      isFinished: item.isFinished,
-    })
-  }
-
-  alert('保存完了')
-  status.value = '最新の状態です'
-  isGreen.value = true
 }
 
 async function updatebool(fieldId: string, index: number) {
@@ -100,28 +77,14 @@ onMounted(fetchItems)
   <div>
     <h1>TODO-APP</h1>
     <div class="container">
-      <form @submit.prevent="pushItem" :disabled="status == '保存中...'">
-        <input
-          v-model="word"
-          required
-          placeholder="TodoListに入れたいものを入力"
-          class="textbox"
-          :disabled="status == '保存中...'"
-        />
-        <button class="button" :disabled="status == '保存中...'">追加</button>
+      <form @submit.prevent="pushItem">
+        <input v-model="word" required placeholder="TodoListに入れたいものを入力" class="textbox" />
+        <button class="button">追加</button>
       </form>
       <span :class="{ status, cogreen: isGreen, cored: !isGreen }">{{ status }}</span>
     </div>
     <div>
-      <button class="save-button" @click="updateDatabase" :disabled="status == '保存中...'">
-        リストを保存
-      </button>
-      <button
-        v-if="todoList.length > 0"
-        class="all-delete-button"
-        @click="allDelete"
-        :disabled="status == '保存中...'"
-      >
+      <button v-if="todoList.length > 0" class="all-delete-button" @click="allDeleteItems">
         完了項目を全て削除
       </button>
     </div>
@@ -135,7 +98,6 @@ onMounted(fetchItems)
         v-model="todo.isFinished"
         style="transform: scale(1.5); margin-right: 10px"
         @click="updatebool(todo.fieldId, index)"
-        :disabled="status == '保存中...'"
       />
       <label
         for="checkbox"
@@ -143,9 +105,7 @@ onMounted(fetchItems)
         style="vertical-align: middle"
         >{{ todo.content }}</label
       >
-      <button class="delete-botton" @click="deleteItem(index)" :disabled="status == '保存中...'">
-        削除
-      </button>
+      <button class="delete-botton" @click="deleteItem(index)">削除</button>
     </div>
   </div>
 </template>
