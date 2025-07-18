@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
 // @ts-ignore
 import db from './firebase.js'
-import { collection, getDocs, addDoc, deleteDoc,updateDoc, doc } from 'firebase/firestore/lite'
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
+  setDoc,
+} from 'firebase/firestore/lite'
 
 type TodoItem = {
   fieldId: string
@@ -20,10 +29,19 @@ const todoList = ref<TodoItem[]>([])
 
 const pushItem = () => {
   if (word.value == '') return
-  todoList.value.push({ fieldId: content: word.value, isFinished: false })
+  const uniqueId: string = uuidv4()
+  pushItemToDatabase(word.value, uniqueId)
+  todoList.value.push({ fieldId: uniqueId, content: word.value, isFinished: false })
   word.value = ''
   status.value = '未保存の状態です'
   isGreen.value = false
+}
+
+const pushItemToDatabase = (w: string, ID: string) => {
+  setDoc(doc(db, 'items', ID), {
+    content: w,
+    isFinished: false,
+  })
 }
 
 const deleteItem = (i: number) => {
@@ -44,6 +62,7 @@ const allDelete = () => {
 async function fetchItems() {
   const querySnapshot = await getDocs(collection(db, 'items'))
   todoList.value = querySnapshot.docs.map((doc) => ({
+    fieldId: doc.id,
     content: doc.data().content,
     isFinished: doc.data().isFinished,
   }))
@@ -68,9 +87,9 @@ async function updateDatabase() {
   isGreen.value = true
 }
 
-async function updatebool(itemId: string) {
-  await updateDoc(doc(db, 'items', itemId), {
-    content: content,
+async function updatebool(fieldId: string, index: number) {
+  await updateDoc(doc(db, 'items', fieldId), {
+    isFinished: !todoList.value[index].isFinished,
   })
 }
 
@@ -115,7 +134,7 @@ onMounted(fetchItems)
         id="checkbox"
         v-model="todo.isFinished"
         style="transform: scale(1.5); margin-right: 10px"
-        @click="((isGreen = false), (status = '未保存の状態です'))"
+        @click="updatebool(todo.fieldId, index)"
         :disabled="status == '保存中...'"
       />
       <label
