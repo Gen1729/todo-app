@@ -73,7 +73,7 @@ onMounted(fetchItems)
         <input v-model="word" required placeholder="TodoListに入れたいものを入力" class="textbox" />
         <button class="button">追加</button>
       </form>
-      <span :class="{ status, cogreen: isGreen, cored: !isGreen }">{{ status }}</span>
+      <span>{{ status }}</span>
     </div>
     <div>
       <button v-if="todoList.length > 0" class="all-delete-button" @click="allDeleteItems">
@@ -123,12 +123,6 @@ onMounted(fetchItems)
   height: 36px;
   margin-top: 10px;
 }
-.save-button {
-  font-size: 15px;
-  width: 120px;
-  height: 36px;
-  margin-top: 10px;
-}
 .deleteLine {
   text-decoration: line-through;
 }
@@ -139,16 +133,5 @@ onMounted(fetchItems)
   height: 30px;
   font-size: 15px;
   margin-left: 10px;
-}
-.status {
-  font-size: 20px;
-  margin-left: 10px;
-}
-
-.cogreen {
-  color: green;
-}
-.cored {
-  color: red;
 }
 </style>
