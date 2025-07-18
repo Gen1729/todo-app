@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
-// @ts-ignore
+// @ts-expect-error: Importing JS module without type definitions
 import db from './firebase.js'
 import { collection, getDocs, deleteDoc, updateDoc, doc, setDoc } from 'firebase/firestore/lite'
 
@@ -36,7 +36,7 @@ const deleteItem = (i: number) => {
 }
 
 const allDeleteItems = () => {
-  let newTodoList: TodoItem[] = []
+  const newTodoList: TodoItem[] = []
   todoList.value.map(function (item) {
     if (item.isFinished) {
       deleteDoc(doc(db, 'items', item.fieldId))
