@@ -17,6 +17,7 @@ const word = ref<string>('')
 const todoList = ref<TodoItem[]>([])
 
 const pushItem = () => {
+  console.log(todoList.value)
   if (word.value == '') return
   const uniqueId: string = uuidv4()
   pushItemToDatabase(word.value, uniqueId)
@@ -34,6 +35,14 @@ async function pushItemToDatabase(w: string, ID: string) {
 const deleteItem = (i: number) => {
   deleteDoc(doc(db, 'items', todoList.value[i].fieldId))
   todoList.value.splice(i, 1)
+}
+
+async function taskEdited(content: string, index: number) {
+  todoList.value[index].content = content
+  const fieldId = todoList.value[index].fieldId
+  await updateDoc(doc(db, 'items', fieldId), {
+    content: todoList.value[index].content,
+  })
 }
 
 const allDeleteItems = () => {
@@ -57,8 +66,9 @@ async function fetchItems() {
   }))
 }
 
-async function updatebool(fieldId: string, index: number) {
+async function updatebool(index: number) {
   todoList.value[index].isFinished = !todoList.value[index].isFinished
+  const fieldId = todoList.value[index].fieldId
   await updateDoc(doc(db, 'items', fieldId), {
     isFinished: todoList.value[index].isFinished,
   })
@@ -90,7 +100,13 @@ onMounted(fetchItems)
 
   <div>
     <div v-for="(todo, index) in todoList" :key="index" style="font-size: 30px">
-      <TodoTask :task="todo" :index="index" @updatebool="updatebool" @deleteItem="deleteItem" />
+      <TodoTask
+        :task="todo"
+        :index="index"
+        @updatebool="updatebool"
+        @deleteItem="deleteItem"
+        @taskEdited="taskEdited"
+      />
     </div>
   </div>
 </template>
