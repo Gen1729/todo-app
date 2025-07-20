@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import editImage from '../assets/editpencil.png'
 import { ref } from 'vue'
 type TodoItem = {
   fieldId: string
@@ -64,7 +65,9 @@ function editTask() {
       />
       <button style="vertical-align: middle" class="add-button">完了</button>
     </form>
-    <button v-if="!isEdit" @click="editTask" class="edit-button">✏️</button>
+    <button v-if="!isEdit" @click="editTask" class="edit-button">
+      <img :src="editImage" style="width: 150%" />
+    </button>
     <button class="delete-button" @click="deleteItem(index)">×</button>
   </div>
 </template>
@@ -133,7 +136,7 @@ function editTask() {
   width: 200px;
   height: 37px;
   max-width: 400px;
-  padding: 10px 14px;
+  padding: 10px 10px;
   margin-bottom: 4px;
   font-size: 18px;
   font-family: inherit;

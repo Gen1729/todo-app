@@ -145,7 +145,7 @@ onMounted(fetchItems)
   width: 300px;
   height: 37px;
   max-width: 400px;
-  padding: 10px 14px;
+  padding: 10px 10px;
   font-size: 18px;
   font-family: inherit;
   color: #2c3e50;
